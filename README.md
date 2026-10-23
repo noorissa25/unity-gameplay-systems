@@ -1,60 +1,47 @@
-# Unity Gameplay Systems: Physics Simulation
+# Unity Gameplay Systems: Menus and Collectables
 
-A Unity physics sandbox: rigidbody stacking, layer-based collision filtering, compound colliders, joint chains, a kinematic animated platform, custom center of mass, physics materials, an autonomous jumping object and a ragdoll.
+Game flow and interaction systems in Unity: a post-processed start menu, an in-game pause menu, a trigger-based collectable and a trigger-driven animated prefab that reverses smoothly.
 
-This branch builds on [`character-animation`](../../tree/character-animation). See [Branches](#branches) for the rest of the project.
+This branch builds on [`physics-simulation`](../../tree/physics-simulation). See [Branches](#branches) for the rest of the project.
 
 ## Features
 
-### Rigidbody stacks and collision events
-- Three blue spheres stacked with a slight offset so they topple and roll off one another under gravity.
-- `BallCollisionReporter` fires a bounce event on each collision, reusing the project's audio event system to play a sound.
+### Start menu with post-processing
+- `GameMenuScene` is the first scene in the build. Its camera frames the physics area, so the elevator and jumping bean move behind the menu.
+- Uses the Post Processing package with a global volume: **Depth of Field** (focus distance 2, aperture 5, focal length 50, max blur Very Large) and **Grain** (intensity 1, size 2). The profile is in `Assets/Scenes/GameMenuScene_Profiles/`.
+- **Start Game** uses `GameStarter`, which loads the level and resets `Time.timeScale` to 1. **Exit** quits the game.
+- All canvases use **Scale With Screen Size** (1920×1080), so the UI stays readable on high-DPI displays.
 
-### Layer collision filtering
-- Three red spheres on a dedicated physics layer, with `Physics.IgnoreLayerCollision` set for that layer against itself. They fall into and through one another instead of pushing apart.
+### In-game pause menu
+- **Escape** toggles a centered pause panel and freezes the game.
+- It sits on its own canvas, so hiding it doesn't affect the HUD. `PauseMenuToggle` flips a `CanvasGroup`'s visibility and interactivity and sets `Time.timeScale` to 0 or 1.
+- **Restart Level** reuses `GameStarter` to reload the level. **Quit Game** exits.
 
-### Compound collider
-- An imported mask model (scaled 10×) uses a compound collider instead of a `MeshCollider`: a box for the head and ears, a box for the cheeks and a capsule for the snout, sized from the mesh bounds. There's a single `Rigidbody` on the root.
-- It starts tilted and slightly raised, so it falls and lands nose-first on the ground.
+### Trigger-based collectable
+- A pink sphere with a trigger collider. In `OnTriggerEnter`, `CollectableBall` checks whether the entering rigidbody has a `BallCollector`. If it does, the ball calls `ReceiveBall()`, plays a sound through the audio event system, and destroys itself.
+- Only the root-motion character has a `BallCollector`, so the other characters walk through the ball without picking it up. You can watch **Has Ball** flip in the Inspector.
 
-### Jointed chain
-- Six links connected with `ConfigurableJoint`s. Linear motion is locked at each pivot, angular swing is free, and twist is locked along each link's long axis so the chain swings without spinning.
-- Anchored to a fixed point and started about 18° off vertical, so it swings when play starts.
-
-### Animated kinematic elevator
-- A looping `localPosition.y` animation (0 → 3 → 0 over 3 s) drives a kinematic `Rigidbody`. The Animator uses **Update Mode: Fixed** with **Animate Physics** on, so the platform pushes and carries other rigidbodies. A sphere rides on top of it.
-
-### Self-righting "weeble"
-- A capsule whose `RigidbodyCenterOfMass` is set well below the center of its rounded bottom, so gravity always produces a righting torque. It starts tilted 20° and stands back up after being knocked.
-
-### Physics materials
-- On a ramp, a box with the default material stays put while one with a custom low-friction material (0.1 / 0.1, Minimum combine) slides down.
-- A sphere with a custom bouncy material (bounciness 0.9, Maximum combine) bounces on landing.
-
-### Autonomous jumping bean
-- `JumpingBean` checks for ground with a raycast. While grounded, it applies a random upward and sideways impulse plus a small random torque at random intervals. Nobody controls it.
-
-### Ragdoll
-- A 13-body ragdoll on a rigged humanoid, matching the bone set of Unity's Ragdoll wizard: pelvis, middle spine, head, and both leg and arm chains.
-- Each bone has a collider sized from its bone-to-child distance, a `Rigidbody` and a `CharacterJoint` to its parent. All bones share a ragdoll layer with self-collision disabled.
-- It's placed leaning over a hurdle so it topples across it when play starts.
-
-### Start paused
-- `PauseController` sets `Time.timeScale = 0` on start so the initial setup can be inspected. **P** toggles pause.
-- Everything is laid out to fit within the starting camera's 16:9 view.
+### Trigger-driven animated prefab (alien plants)
+- `AlienPlant.prefab` has an Animator, a radius-3 trigger collider and `PlantRetractTrigger` on the root. The visible mesh sits under a child object, so the animation works wherever the prefab is placed.
+- A custom Animator Controller with a 1D blend tree on a `Retract` float blends between `PlantOut` (full size) and `PlantHidden` (squashed into the ground).
+- The script counts the characters inside the trigger and moves `Retract` toward 1 or 0 a little each frame. The plant can reverse mid-animation without snapping.
 
 ## Controls
 
 | Input | Action |
 |---|---|
-| P | Pause / unpause (the scene starts paused) |
-| W / A / S / D | Move and turn the character |
+| W / A / S / D | Move and turn |
+| T | Switch character |
+| Escape | Open / close pause menu |
+| X | Quit |
+
+To pick up the ball, press **T** once to switch to the root-motion character, then walk forward into the pink sphere. Walk near any plant to make it duck.
 
 ## Running it
-1. Clone the repo, check out this branch (`git checkout physics-simulation`) and add the folder in Unity Hub.
-2. Open `Assets/Scenes/demo.unity`, press Play, then press **P** to unpause.
+1. Clone the repo, check out this branch (`git checkout menus-and-collectables`) and add the folder in Unity Hub.
+2. Open `Assets/Scenes/GameMenuScene.unity` and press Play.
 
-Built with Unity 6 (6000.0.82f1). Uses a free third-party "Japanese Mask" model (`Assets/Japanese Mask`).
+Built with Unity 6 (6000.0.82f1). Uses the Unity Post Processing package and TextMeshPro.
 
 ## Branches
 
