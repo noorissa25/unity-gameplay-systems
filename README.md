@@ -57,6 +57,7 @@ The AI runs on its own. The rest of the scene stays playable:
 |---|---|
 | W / A / S / D | Move and turn the selected character |
 | T | Switch character |
+| C | Toggle between the overhead view and a follow camera behind the current character |
 | Escape | Pause menu |
 | X | Quit |
 

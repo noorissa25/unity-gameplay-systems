@@ -12,8 +12,19 @@ public class CharacterManager : MonoBehaviour {
 
     public string CameraPositionMarkerName = "CamPos";
 
+    // Switches between the fixed overhead view and the follow camera
+    public KeyCode cameraToggleKey = KeyCode.C;
+
+    public float followFieldOfView = 60f;
+
 
     protected int nextCharacterIndex = 0;
+
+    // Overhead pose, saved at start so it can be restored when the follow camera is turned off
+    protected Vector3 overheadPosition;
+    protected Quaternion overheadRotation;
+    protected float overheadFieldOfView;
+    protected Camera cam;
 
     protected void disableAllCharacters() {
 
@@ -58,11 +69,35 @@ public class CharacterManager : MonoBehaviour {
         incrementCharacterIndex();
     }
 
-	
+    protected void toggleCamera() {
+
+        bool follow = !thirdPersonCamera.enabled;
+
+        thirdPersonCamera.enabled = follow;
+
+        if (follow)
+        {
+            cam.fieldOfView = followFieldOfView;
+        }
+        else
+        {
+            thirdPersonCamera.transform.SetPositionAndRotation(overheadPosition, overheadRotation);
+            cam.fieldOfView = overheadFieldOfView;
+        }
+
+        Debug.Log("Camera switched to " + (follow ? "follow" : "overhead") + " view.");
+    }
+
+
 	void Start () {
 		
         if (thirdPersonCamera == null)
             Debug.LogError("camera must be set");
+
+        cam = thirdPersonCamera.GetComponent<Camera>();
+        overheadPosition = thirdPersonCamera.transform.position;
+        overheadRotation = thirdPersonCamera.transform.rotation;
+        overheadFieldOfView = cam.fieldOfView;
 
         setCharacter(nextCharacterIndex);
         incrementCharacterIndex();
@@ -77,6 +112,11 @@ public class CharacterManager : MonoBehaviour {
             Debug.Log("Character toggled");
             toggleCharacter();
 
+        }
+
+        if (Input.GetKeyUp(cameraToggleKey))
+        {
+            toggleCamera();
         }
 		
 	}
