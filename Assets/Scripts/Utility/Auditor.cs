@@ -133,7 +133,7 @@ namespace GameplaySystems.Utility
 
                     if (guiText != null)
                     {
-                        if (guiText.text.Contains("George P. Burdell") ||
+                        if (guiText.text.Contains("Example name") ||
                             !guiText.text.ToLower().Contains(lastNameValid.ToLower()))
                         {
                             auditErrors.Add($"• GUI Text name has not been set correctly. Must contain provided last name. Currently: {guiText.text}");
