@@ -15,7 +15,7 @@ This branch (`main` / `ai-navigation`) is the latest stage and contains everythi
 
 Each branch's README describes that stage in detail.
 
-## AI navigation (this stage)
+## AI navigation
 
 An AI minion runs a continuous loop with no player input:
 1. It patrols five static waypoints in order.
